@@ -8,6 +8,7 @@
 #include "ratelimit.h"
 #include "memory.h"
 #include "nvs_keys.h"
+#include "display.h"
 #include "cJSON.h"
 #include "esp_timer.h"
 #include "esp_log.h"
@@ -540,6 +541,10 @@ static void process_message(const char *user_message, int64_t reply_chat_id)
     int tool_count;
     const tool_def_t *tools = tools_get_all(&tool_count);
 
+    // Show user message on display and set thinking state
+    display_add_user_message(user_message);
+    display_set_state(DISPLAY_STATE_THINKING);
+
     // Add user message to history
     history_add("user", user_message, false, false, NULL, NULL);
 
@@ -645,6 +650,7 @@ static void process_message(const char *user_message, int64_t reply_chat_id)
             ESP_LOGE(TAG, "LLM request failed after %d retries", LLM_MAX_RETRIES);
             history_rollback_to(history_turn_start, "llm request failed");
             send_response("Error: Failed to contact LLM API after retries", reply_chat_id);
+            display_set_state(DISPLAY_STATE_ERROR);
             metrics_log_request(&metrics, "llm_error");
             return;
         }
@@ -673,6 +679,10 @@ static void process_message(const char *user_message, int64_t reply_chat_id)
         // Check if it's a tool use
         if (tool_name[0] != '\0' && tool_input) {
             ESP_LOGI(TAG, "Tool call: %s (round %d)", tool_name, rounds);
+
+            // Update display with tool status
+            display_set_state(DISPLAY_STATE_TOOL_EXEC);
+            display_set_tool_status(tool_name);
 
             // Store the tool_input as JSON string for history
             char *input_str = cJSON_PrintUnformatted(tool_input);
@@ -727,10 +737,13 @@ static void process_message(const char *user_message, int64_t reply_chat_id)
             if (text_out[0] != '\0') {
                 history_add("assistant", text_out, false, false, NULL, NULL);
                 send_response(text_out, reply_chat_id);
+                display_add_agent_message(text_out);
             } else {
                 history_add("assistant", "(No response from Claude)", false, false, NULL, NULL);
                 send_response("(No response from Claude)", reply_chat_id);
+                display_add_agent_message("(No response)");
             }
+            display_set_state(DISPLAY_STATE_IDLE);
             json_free_parsed_response();
             done = true;
         }

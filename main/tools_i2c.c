@@ -1,6 +1,6 @@
 #include "tools_handlers.h"
 #include "config.h"
-#include "driver/i2c.h"
+#include "driver/i2c_master.h"
 #include "esp_err.h"
 #include "freertos/FreeRTOS.h"
 #include <stdbool.h>
@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define I2C_SCAN_PORT                I2C_NUM_0
+#define I2C_SCAN_PORT                I2C_NUM_1
 #define I2C_SCAN_ADDR_FIRST          0x03
 #define I2C_SCAN_ADDR_LAST           0x77
 #define I2C_SCAN_DEFAULT_FREQ_HZ     100000
@@ -123,27 +123,22 @@ bool tools_i2c_scan_handler(const cJSON *input, char *result, size_t result_len)
         return false;
     }
 
-    // Clear any previous configuration on this port so scans are repeatable.
-    i2c_driver_delete(I2C_SCAN_PORT);
-
-    i2c_config_t conf = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = sda_pin,
+    // Create a temporary I2C master bus on I2C_NUM_1 (I2C_NUM_0 is used by the BSP)
+    i2c_master_bus_config_t bus_config = {
+        .clk_source = I2C_CLK_SRC_DEFAULT,
+        .i2c_port = I2C_SCAN_PORT,
         .scl_io_num = scl_pin,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = frequency_hz,
+        .sda_io_num = sda_pin,
+        .glitch_ignore_cnt = 7,
+        .flags = {
+            .enable_internal_pullup = true,
+        },
     };
 
-    esp_err_t err = i2c_param_config(I2C_SCAN_PORT, &conf);
+    i2c_master_bus_handle_t bus_handle = NULL;
+    esp_err_t err = i2c_new_master_bus(&bus_config, &bus_handle);
     if (err != ESP_OK) {
-        snprintf(result, result_len, "Error: i2c_param_config failed (%s)", esp_err_to_name(err));
-        return false;
-    }
-
-    err = i2c_driver_install(I2C_SCAN_PORT, I2C_MODE_MASTER, 0, 0, 0);
-    if (err != ESP_OK) {
-        snprintf(result, result_len, "Error: i2c_driver_install failed (%s)", esp_err_to_name(err));
+        snprintf(result, result_len, "Error: i2c_new_master_bus failed (%s)", esp_err_to_name(err));
         return false;
     }
 
@@ -151,30 +146,13 @@ bool tools_i2c_scan_handler(const cJSON *input, char *result, size_t result_len)
     int found_count = 0;
 
     for (int addr = I2C_SCAN_ADDR_FIRST; addr <= I2C_SCAN_ADDR_LAST; addr++) {
-        i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-        if (!cmd) {
-            i2c_driver_delete(I2C_SCAN_PORT);
-            snprintf(result, result_len, "Error: out of memory during I2C scan");
-            return false;
-        }
-
-        i2c_master_start(cmd);
-        i2c_master_write_byte(cmd, (addr << 1) | I2C_MASTER_WRITE, true);
-        i2c_master_stop(cmd);
-
-        err = i2c_master_cmd_begin(
-            I2C_SCAN_PORT,
-            cmd,
-            pdMS_TO_TICKS(I2C_SCAN_ADDR_TIMEOUT_MS)
-        );
-        i2c_cmd_link_delete(cmd);
-
+        err = i2c_master_probe(bus_handle, addr, I2C_SCAN_ADDR_TIMEOUT_MS);
         if (err == ESP_OK && found_count < (int)(sizeof(found_addresses))) {
             found_addresses[found_count++] = (uint8_t)addr;
         }
     }
 
-    i2c_driver_delete(I2C_SCAN_PORT);
+    i2c_del_master_bus(bus_handle);
 
     if (found_count == 0) {
         snprintf(

@@ -76,3 +76,13 @@ CONFIG_ZCLAW_GPIO_ALLOWED_PINS="1,35,36,37,38,43,44,48"
 
 # Factory reset pin: GPIO 9 is used by touch INT on this board, disable factory reset
 CONFIG_ZCLAW_FACTORY_RESET_PIN=-1
+
+# -------------------------------------------------------------------------
+# LVGL configuration
+# -------------------------------------------------------------------------
+CONFIG_LV_COLOR_16_SWAP=y
+CONFIG_LV_MEM_CUSTOM=y
+CONFIG_LV_MEMCPY_MEMSET_STD=y
+CONFIG_LV_USE_PERF_MONITOR=n
+CONFIG_LV_FONT_MONTSERRAT_12=y
+CONFIG_LV_FONT_MONTSERRAT_14=y

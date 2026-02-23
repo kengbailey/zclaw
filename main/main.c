@@ -12,6 +12,7 @@
 #include "nvs_keys.h"
 #include "messages.h"
 #include "wifi_credentials.h"
+#include "display.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -400,7 +401,13 @@ void app_main(void)
     // 2. Initialize OTA (check for pending rollback)
     ota_init();
 
-    // 3. Check factory reset button
+    // 3. Initialize display (before WiFi so user sees boot status)
+    if (display_init() != ESP_OK) {
+        ESP_LOGW(TAG, "Display init failed, continuing without display");
+    }
+    display_set_state(DISPLAY_STATE_BOOTING);
+
+    // 4. Check factory reset button
 #if !CONFIG_ZCLAW_EMULATOR_MODE && FACTORY_RESET_PIN >= 0
     check_factory_reset();
 #endif
@@ -479,7 +486,9 @@ void app_main(void)
     }
 
     // 5. Connect to WiFi
+    display_set_state(DISPLAY_STATE_CONNECTING);
     if (!wifi_connect_sta()) {
+        display_set_state(DISPLAY_STATE_ERROR);
         ESP_LOGE(TAG, "WiFi failed, restarting...");
         vTaskDelay(pdMS_TO_TICKS(3000));
         esp_restart();
@@ -565,6 +574,18 @@ void app_main(void)
     ESP_LOGI(TAG, "  Ready! Free heap: %lu bytes", esp_get_free_heap_size());
     ESP_LOGI(TAG, "========================================");
     ESP_LOGI(TAG, "");
+
+    // Update display to ready state
+    display_set_state(DISPLAY_STATE_IDLE);
+    {
+        esp_netif_ip_info_t ip_info;
+        esp_netif_t *netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
+        if (netif && esp_netif_get_ip_info(netif, &ip_info) == ESP_OK) {
+            char ip_str[16];
+            snprintf(ip_str, sizeof(ip_str), IPSTR, IP2STR(&ip_info.ip));
+            display_set_wifi_status(ip_str);
+        }
+    }
 
     // 19. Send startup notification on Telegram
     if (telegram_enabled && telegram_is_configured()) {
