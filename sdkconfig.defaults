@@ -1,11 +1,25 @@
-# Target
-CONFIG_IDF_TARGET="esp32c3"
+# Target: Waveshare ESP32-S3-Knob-Touch-LCD-1.8
+CONFIG_IDF_TARGET="esp32s3"
+
+# Flash: 16MB, QIO mode
+CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="16MB"
+
+# SPIRAM: 8MB octal mode
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_80M=y
+
+# CPU: dual-core at 240MHz
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+
+# Cache for S3 with PSRAM
+CONFIG_ESP32S3_DATA_CACHE_LINE_64B=y
 
 # Partition table
 CONFIG_PARTITION_TABLE_CUSTOM=y
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
-CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
-CONFIG_ESPTOOLPY_FLASHSIZE="4MB"
 
 # Size optimization
 CONFIG_COMPILER_OPTIMIZATION_SIZE=y
@@ -14,7 +28,7 @@ CONFIG_NEWLIB_NANO_FORMAT=y
 # FreeRTOS
 CONFIG_FREERTOS_HZ=1000
 
-# mbedTLS - needed for HTTPS (reduced cert bundle)
+# mbedTLS - needed for HTTPS
 CONFIG_MBEDTLS_SSL_MAX_CONTENT_LEN=16384
 CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y
 CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_CMN=y
@@ -35,8 +49,8 @@ CONFIG_ESP_WIFI_STATIC_RX_BUFFER_NUM=4
 CONFIG_ESP_WIFI_DYNAMIC_RX_BUFFER_NUM=8
 CONFIG_ESP_WIFI_TX_BUFFER_TYPE=0
 CONFIG_ESP_WIFI_STATIC_TX_BUFFER_NUM=4
-# Keep STA/WPA2 path lean on default build target to stay within firmware budget.
-# CONFIG_ESP_WIFI_ENABLE_WPA3_SAE is not set
+# With 16MB flash we can afford WPA3
+CONFIG_ESP_WIFI_ENABLE_WPA3_SAE=y
 # CONFIG_ESP_WIFI_ENABLE_SAE_PK is not set
 # CONFIG_ESP_WIFI_SOFTAP_SAE_SUPPORT is not set
 # CONFIG_ESP_WIFI_ENABLE_WPA3_OWE_STA is not set
@@ -52,6 +66,13 @@ CONFIG_ESP_TASK_WDT_TIMEOUT_S=60
 # OTA updates
 CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y
 
-# GPIO tool safety defaults
-CONFIG_ZCLAW_GPIO_MIN_PIN=2
-CONFIG_ZCLAW_GPIO_MAX_PIN=10
+# GPIO tool safety: allowlist for this board (avoid all reserved peripheral pins)
+CONFIG_ZCLAW_GPIO_ALLOWED_PINS="1,35,36,37,38,43,44,48"
+
+# When USB-C is oriented for the ESP32-S3, it connects directly to the S3's
+# native USB Serial/JTAG interface (usbmodem). Use the default USB Serial/JTAG
+# driver (not UART). Flip the USB-C cable to access the secondary ESP32 instead.
+# CONFIG_ZCLAW_CHANNEL_UART is not set
+
+# Factory reset pin: GPIO 9 is used by touch INT on this board, disable factory reset
+CONFIG_ZCLAW_FACTORY_RESET_PIN=-1

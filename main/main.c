@@ -401,7 +401,7 @@ void app_main(void)
     ota_init();
 
     // 3. Check factory reset button
-#if !CONFIG_ZCLAW_EMULATOR_MODE
+#if !CONFIG_ZCLAW_EMULATOR_MODE && FACTORY_RESET_PIN >= 0
     check_factory_reset();
 #endif
 

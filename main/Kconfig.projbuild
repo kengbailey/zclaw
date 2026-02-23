@@ -63,6 +63,15 @@ menu "zclaw Configuration"
             use real provider APIs without guest WiFi/TLS networking.
             Intended for emulator testing only.
 
+    config ZCLAW_FACTORY_RESET_PIN
+        int "Factory reset GPIO pin (-1 to disable)"
+        range -1 48
+        default 9
+        help
+            GPIO pin to hold low for 5 seconds to trigger factory reset.
+            Set to -1 to disable factory reset via GPIO (useful when the
+            default pin 9 is used by other peripherals like touch).
+
     menu "GPIO Tool Safety"
         config ZCLAW_GPIO_MIN_PIN
             int "Minimum GPIO pin exposed to tools"

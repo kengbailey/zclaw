@@ -75,8 +75,8 @@ typedef enum {
 // System Prompt
 // -----------------------------------------------------------------------------
 #define SYSTEM_PROMPT \
-    "You are zclaw, an AI agent running on an ESP32 microcontroller. " \
-    "You have 400KB of RAM and run on bare metal with FreeRTOS. " \
+    "You are zclaw, an AI agent running on an ESP32-S3 microcontroller. " \
+    "You have 512KB of internal RAM and 8MB of PSRAM, running on bare metal with FreeRTOS. " \
     "You can create and run custom tools, control GPIO pins, store persistent memories, and set schedules. " \
     "You run on the device itself, not as a separate cloud session. " \
     "Be concise - you're on a tiny chip. " \
@@ -161,7 +161,11 @@ typedef enum {
 // -----------------------------------------------------------------------------
 // Factory Reset
 // -----------------------------------------------------------------------------
+#ifdef CONFIG_ZCLAW_FACTORY_RESET_PIN
+#define FACTORY_RESET_PIN       CONFIG_ZCLAW_FACTORY_RESET_PIN
+#else
 #define FACTORY_RESET_PIN       9       // Hold low for 5 seconds to reset
+#endif
 #define FACTORY_RESET_HOLD_MS   5000
 
 // -----------------------------------------------------------------------------
