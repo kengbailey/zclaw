@@ -561,3 +561,15 @@ void display_set_wifi_status(const char *ip_addr)
 
     lvgl_unlock();
 }
+
+void display_scroll_conversation(int pixels)
+{
+    if (!s_lvgl_mux) return;
+    if (!lvgl_lock(100)) return;
+
+    lv_obj_t *cont = lv_obj_get_parent(s_conversation);
+    lv_coord_t cur_y = lv_obj_get_scroll_y(cont);
+    lv_obj_scroll_to_y(cont, cur_y + pixels, LV_ANIM_ON);
+
+    lvgl_unlock();
+}

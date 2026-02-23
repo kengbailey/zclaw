@@ -31,6 +31,7 @@ idf_component_register(
         "user_tools.c"
         "wifi_credentials.c"
         "display.c"
+        "input.c"
     INCLUDE_DIRS "."
     REQUIRES
         nvs_flash
@@ -48,6 +49,7 @@ idf_component_register(
         i2c_bsp
         lcd_touch_bsp
         lcd_bl_pwm_bsp
+        user_encoder_bsp
 )
 
 set(ZCLAW_VERSION_FILE "${CMAKE_SOURCE_DIR}/VERSION")

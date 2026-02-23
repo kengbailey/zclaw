@@ -13,6 +13,7 @@
 #include "messages.h"
 #include "wifi_credentials.h"
 #include "display.h"
+#include "input.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -406,6 +407,11 @@ void app_main(void)
         ESP_LOGW(TAG, "Display init failed, continuing without display");
     }
     display_set_state(DISPLAY_STATE_BOOTING);
+
+    // 3b. Initialize input (encoder knob)
+    if (input_init() != ESP_OK) {
+        ESP_LOGW(TAG, "Input init failed, continuing without knob");
+    }
 
     // 4. Check factory reset button
 #if !CONFIG_ZCLAW_EMULATOR_MODE && FACTORY_RESET_PIN >= 0
