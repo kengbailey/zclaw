@@ -502,6 +502,10 @@ void display_set_state(display_state_t state)
         // Tool name set separately via display_set_tool_status
         lv_obj_set_style_text_color(s_status_label, lv_color_hex(0xBB86FC), 0);
         break;
+    case DISPLAY_STATE_LISTENING:
+        lv_label_set_text(s_status_label, "Listening...");
+        lv_obj_set_style_text_color(s_status_label, lv_color_hex(0xFFA726), 0);
+        break;
     case DISPLAY_STATE_ERROR:
         lv_label_set_text(s_status_label, "Error");
         lv_obj_set_style_text_color(s_status_label, lv_color_hex(0xFF5252), 0);

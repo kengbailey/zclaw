@@ -33,6 +33,7 @@ idf_component_register(
         "display.c"
         "input.c"
         "haptic.c"
+        "voice.c"
     INCLUDE_DIRS "."
     REQUIRES
         nvs_flash

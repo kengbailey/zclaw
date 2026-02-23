@@ -119,6 +119,14 @@ typedef enum {
 #endif
 
 // -----------------------------------------------------------------------------
+// Voice / STT
+// -----------------------------------------------------------------------------
+#define VOICE_TASK_STACK_SIZE   6144
+#define VOICE_TASK_PRIORITY     4
+#define VOICE_MAX_RECORD_SEC    10
+#define VOICE_TOUCH_HOLD_MS     500     // Long-press threshold for recording
+
+// -----------------------------------------------------------------------------
 // NVS (persistent storage)
 // -----------------------------------------------------------------------------
 #define NVS_NAMESPACE           "zclaw"

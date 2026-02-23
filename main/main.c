@@ -15,6 +15,7 @@
 #include "display.h"
 #include "input.h"
 #include "haptic.h"
+#include "voice.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -419,6 +420,11 @@ void app_main(void)
         ESP_LOGW(TAG, "Haptic init failed, continuing without haptic");
     }
 
+    // 3d. Initialize voice (I2S PDM mic)
+    if (voice_init() != ESP_OK) {
+        ESP_LOGW(TAG, "Voice init failed, continuing without voice");
+    }
+
     // 4. Check factory reset button
 #if !CONFIG_ZCLAW_EMULATOR_MODE && FACTORY_RESET_PIN >= 0
     check_factory_reset();
@@ -568,13 +574,16 @@ void app_main(void)
         }
     }
 
-    // 16. Start agent task
+    // 16. Start voice task
+    voice_start(input_queue);
+
+    // 17. Start agent task
     startup_err = agent_start(input_queue, channel_output_queue, telegram_output_queue);
     if (startup_err != ESP_OK) {
         fail_fast_startup("agent_start", startup_err);
     }
 
-    // 17. Start cron task
+    // 18. Start cron task
     startup_err = cron_start(input_queue);
     if (startup_err != ESP_OK) {
         fail_fast_startup("cron_start", startup_err);

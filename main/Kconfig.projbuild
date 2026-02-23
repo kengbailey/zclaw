@@ -98,4 +98,19 @@ menu "zclaw Configuration"
                 When set (non-empty), this list is used instead of min/max range.
     endmenu
 
+    menu "Voice / STT"
+        config ZCLAW_WHISPER_URL
+            string "Whisper API URL"
+            default "http://192.168.8.116:8000/v1/audio/transcriptions"
+            help
+                URL endpoint for the Whisper speech-to-text API.
+                Supports self-hosted faster-whisper or OpenAI Whisper API.
+
+        config ZCLAW_WHISPER_MODEL
+            string "Whisper Model"
+            default "Systran/faster-distil-whisper-large-v3"
+            help
+                Model name sent to the Whisper API.
+    endmenu
+
 endmenu
