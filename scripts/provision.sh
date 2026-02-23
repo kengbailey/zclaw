@@ -14,6 +14,7 @@ API_KEY=""
 API_URL=""
 TG_TOKEN=""
 TG_CHAT_IDS=""
+STT_KEY=""
 ASSUME_YES=false
 VERIFY_API_KEY=true
 PRINT_DETECTED_SSID=false
@@ -33,6 +34,7 @@ Options:
   --model <model-id>        Model ID (defaults by backend)
   --api-key <key>           LLM API key (required for anthropic/openai/openrouter)
   --api-url <url>           Optional custom API endpoint URL
+  --stt-key <key>           OpenAI API key for Whisper STT (optional)
   --tg-token <token>        Telegram bot token (optional)
   --tg-chat-id <id[,id...]> Telegram chat ID allowlist (optional)
   --tg-chat-ids <list>      Alias of --tg-chat-id
@@ -850,6 +852,14 @@ while [ $# -gt 0 ]; do
         --tg-chat-ids=*)
             TG_CHAT_IDS="${1#*=}"
             ;;
+        --stt-key)
+            shift
+            [ $# -gt 0 ] || { echo "Error: --stt-key requires a value"; exit 1; }
+            STT_KEY="$1"
+            ;;
+        --stt-key=*)
+            STT_KEY="${1#*=}"
+            ;;
         --yes)
             ASSUME_YES=true
             ;;
@@ -1084,6 +1094,10 @@ if [ "$ASSUME_YES" != true ]; then
     if [ -z "$TG_CHAT_IDS" ]; then
         read -r -p "Telegram chat ID(s) (optional, comma-separated): " TG_CHAT_IDS
     fi
+
+    if [ -z "$STT_KEY" ]; then
+        read -r -p "OpenAI API key for Whisper STT (optional): " STT_KEY
+    fi
 fi
 
 if [ -n "$TG_CHAT_IDS" ]; then
@@ -1126,6 +1140,10 @@ trap 'rm -rf "$tmpdir"' EXIT
     printf "llm_model,data,string,%s\n" "$(csv_escape "$MODEL")"
     if [ -n "$API_URL" ]; then
         printf "llm_api_url,data,string,%s\n" "$(csv_escape "$API_URL")"
+    fi
+
+    if [ -n "$STT_KEY" ]; then
+        printf "stt_key,data,string,%s\n" "$(csv_escape "$STT_KEY")"
     fi
 
     if [ -n "$TG_TOKEN" ]; then

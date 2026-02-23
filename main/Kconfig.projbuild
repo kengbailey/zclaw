@@ -101,14 +101,14 @@ menu "zclaw Configuration"
     menu "Voice / STT"
         config ZCLAW_WHISPER_URL
             string "Whisper API URL"
-            default "http://192.168.8.116:8000/v1/audio/transcriptions"
+            default "https://api.openai.com/v1/audio/transcriptions"
             help
                 URL endpoint for the Whisper speech-to-text API.
-                Supports self-hosted faster-whisper or OpenAI Whisper API.
+                Supports OpenAI Whisper API or self-hosted faster-whisper.
 
         config ZCLAW_WHISPER_MODEL
             string "Whisper Model"
-            default "Systran/faster-distil-whisper-large-v3"
+            default "whisper-1"
             help
                 Model name sent to the Whisper API.
     endmenu

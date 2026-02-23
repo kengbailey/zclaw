@@ -7,12 +7,15 @@
 
 #include "driver/i2s_pdm.h"
 #include "esp_http_client.h"
+#include "esp_crt_bundle.h"
 #include "esp_log.h"
 #include "esp_timer.h"
 #include "esp_heap_caps.h"
 #include "cJSON.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "memory.h"
+#include "nvs_keys.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -34,10 +37,10 @@ static const char *TAG = "voice";
 
 // Whisper config
 #ifndef CONFIG_ZCLAW_WHISPER_URL
-#define CONFIG_ZCLAW_WHISPER_URL "http://192.168.8.116:8000/v1/audio/transcriptions"
+#define CONFIG_ZCLAW_WHISPER_URL "https://api.openai.com/v1/audio/transcriptions"
 #endif
 #ifndef CONFIG_ZCLAW_WHISPER_MODEL
-#define CONFIG_ZCLAW_WHISPER_MODEL "Systran/faster-distil-whisper-large-v3"
+#define CONFIG_ZCLAW_WHISPER_MODEL "whisper-1"
 #endif
 
 // WAV file header (44 bytes)
@@ -179,10 +182,11 @@ static esp_err_t whisper_transcribe(const uint8_t *wav_data, size_t wav_size,
              "multipart/form-data; boundary=%s", boundary);
 
     esp_http_client_config_t cfg = {
-        .url           = CONFIG_ZCLAW_WHISPER_URL,
-        .method        = HTTP_METHOD_POST,
-        .event_handler = whisper_http_event,
-        .timeout_ms    = 30000,
+        .url               = CONFIG_ZCLAW_WHISPER_URL,
+        .method            = HTTP_METHOD_POST,
+        .event_handler     = whisper_http_event,
+        .timeout_ms        = 30000,
+        .crt_bundle_attach = esp_crt_bundle_attach,
     };
 
     esp_http_client_handle_t client = esp_http_client_init(&cfg);
@@ -192,6 +196,15 @@ static esp_err_t whisper_transcribe(const uint8_t *wav_data, size_t wav_size,
     }
 
     esp_http_client_set_header(client, "Content-Type", content_type);
+
+    // Add Bearer auth if STT API key is provisioned
+    char stt_key[128] = {0};
+    if (memory_get(NVS_KEY_STT_API_KEY, stt_key, sizeof(stt_key)) && stt_key[0] != '\0') {
+        char auth_header[192];
+        snprintf(auth_header, sizeof(auth_header), "Bearer %s", stt_key);
+        esp_http_client_set_header(client, "Authorization", auth_header);
+    }
+
     esp_http_client_set_post_field(client, body, (int)total);
 
     ESP_LOGI(TAG, "Sending %u bytes to Whisper API", (unsigned)total);

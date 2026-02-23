@@ -14,6 +14,7 @@
 #define NVS_KEY_TG_CHAT_IDS  "tg_chat_ids"
 #define NVS_KEY_TIMEZONE     "timezone"
 #define NVS_KEY_PERSONA      "persona"
+#define NVS_KEY_STT_API_KEY  "stt_key"
 
 // Rate-limit bookkeeping keys.
 #define NVS_KEY_RL_DAILY     "rl_daily"

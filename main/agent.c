@@ -571,6 +571,7 @@ static void process_message(const char *user_message, int64_t reply_chat_id)
             ESP_LOGE(TAG, "Failed to build request JSON");
             history_rollback_to(history_turn_start, "request build failed");
             send_response("Error: Failed to build request", reply_chat_id);
+            display_set_state(DISPLAY_STATE_IDLE);
             metrics_log_request(&metrics, "request_build_error");
             return;
         }
@@ -583,6 +584,7 @@ static void process_message(const char *user_message, int64_t reply_chat_id)
             free(request);
             history_rollback_to(history_turn_start, "rate limited");
             send_response(rate_reason, reply_chat_id);
+            display_set_state(DISPLAY_STATE_IDLE);
             metrics_log_request(&metrics, "rate_limited");
             return;
         }
@@ -653,7 +655,7 @@ static void process_message(const char *user_message, int64_t reply_chat_id)
             history_rollback_to(history_turn_start, "llm request failed");
             send_response("Error: Failed to contact LLM API after retries", reply_chat_id);
             haptic_play(HAPTIC_ERROR);
-            display_set_state(DISPLAY_STATE_ERROR);
+            display_set_state(DISPLAY_STATE_IDLE);
             metrics_log_request(&metrics, "llm_error");
             return;
         }
@@ -675,6 +677,7 @@ static void process_message(const char *user_message, int64_t reply_chat_id)
             history_rollback_to(history_turn_start, "llm response parse failed");
             send_response("Error: Failed to parse LLM response", reply_chat_id);
             json_free_parsed_response();
+            display_set_state(DISPLAY_STATE_IDLE);
             metrics_log_request(&metrics, "parse_error");
             return;
         }
@@ -757,6 +760,7 @@ static void process_message(const char *user_message, int64_t reply_chat_id)
         ESP_LOGW(TAG, "Max tool rounds reached");
         history_add("assistant", "(Reached max tool iterations)", false, false, NULL, NULL);
         send_response("(Reached max tool iterations)", reply_chat_id);
+        display_set_state(DISPLAY_STATE_IDLE);
         metrics_log_request(&metrics, "max_rounds");
         return;
     }
