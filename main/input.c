@@ -1,5 +1,6 @@
 #include "input.h"
 #include "display.h"
+#include "haptic.h"
 #include "user_encoder_bsp.h"
 
 #include "freertos/FreeRTOS.h"
@@ -23,10 +24,12 @@ static void input_task(void *arg)
 
         if (bits & BIT(0)) {
             // Knob left → scroll up
+            haptic_play(HAPTIC_TICK);
             display_scroll_conversation(-SCROLL_PIXELS);
         }
         if (bits & BIT(1)) {
             // Knob right → scroll down
+            haptic_play(HAPTIC_TICK);
             display_scroll_conversation(SCROLL_PIXELS);
         }
     }

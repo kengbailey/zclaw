@@ -32,6 +32,7 @@ idf_component_register(
         "wifi_credentials.c"
         "display.c"
         "input.c"
+        "haptic.c"
     INCLUDE_DIRS "."
     REQUIRES
         nvs_flash

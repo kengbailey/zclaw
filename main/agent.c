@@ -9,6 +9,7 @@
 #include "memory.h"
 #include "nvs_keys.h"
 #include "display.h"
+#include "haptic.h"
 #include "cJSON.h"
 #include "esp_timer.h"
 #include "esp_log.h"
@@ -542,6 +543,7 @@ static void process_message(const char *user_message, int64_t reply_chat_id)
     const tool_def_t *tools = tools_get_all(&tool_count);
 
     // Show user message on display and set thinking state
+    haptic_play(HAPTIC_CLICK);
     display_add_user_message(user_message);
     display_set_state(DISPLAY_STATE_THINKING);
 
@@ -650,6 +652,7 @@ static void process_message(const char *user_message, int64_t reply_chat_id)
             ESP_LOGE(TAG, "LLM request failed after %d retries", LLM_MAX_RETRIES);
             history_rollback_to(history_turn_start, "llm request failed");
             send_response("Error: Failed to contact LLM API after retries", reply_chat_id);
+            haptic_play(HAPTIC_ERROR);
             display_set_state(DISPLAY_STATE_ERROR);
             metrics_log_request(&metrics, "llm_error");
             return;
@@ -743,6 +746,7 @@ static void process_message(const char *user_message, int64_t reply_chat_id)
                 send_response("(No response from Claude)", reply_chat_id);
                 display_add_agent_message("(No response)");
             }
+            haptic_play(HAPTIC_SUCCESS);
             display_set_state(DISPLAY_STATE_IDLE);
             json_free_parsed_response();
             done = true;

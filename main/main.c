@@ -14,6 +14,7 @@
 #include "wifi_credentials.h"
 #include "display.h"
 #include "input.h"
+#include "haptic.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -411,6 +412,11 @@ void app_main(void)
     // 3b. Initialize input (encoder knob)
     if (input_init() != ESP_OK) {
         ESP_LOGW(TAG, "Input init failed, continuing without knob");
+    }
+
+    // 3c. Initialize haptic motor (DRV2605)
+    if (haptic_init() != ESP_OK) {
+        ESP_LOGW(TAG, "Haptic init failed, continuing without haptic");
     }
 
     // 4. Check factory reset button

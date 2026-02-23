@@ -6,6 +6,7 @@
 #define BSP_I2C_SCL     GPIO_NUM_12
 #define BSP_I2C_SDA     GPIO_NUM_11
 #define BSP_TOUCH_ADDR  0x15
+#define BSP_DRV2605_ADDR 0x5A
 
 static i2c_master_bus_handle_t user_i2c_port0_handle = NULL;
 i2c_master_dev_handle_t disp_touch_dev_handle = NULL;
@@ -40,6 +41,9 @@ void i2c_master_Init(void)
 
   dev_cfg.device_address = BSP_TOUCH_ADDR;
   ESP_ERROR_CHECK(i2c_master_bus_add_device(user_i2c_port0_handle, &dev_cfg, &disp_touch_dev_handle));
+
+  dev_cfg.device_address = BSP_DRV2605_ADDR;
+  ESP_ERROR_CHECK(i2c_master_bus_add_device(user_i2c_port0_handle, &dev_cfg, &drv2605_dev_handle));
 }
 
 uint8_t i2c_write_buff(i2c_master_dev_handle_t dev_handle,int reg,uint8_t *buf,uint8_t len)
