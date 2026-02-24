@@ -20,5 +20,6 @@ void display_add_agent_message(const char *text);
 void display_set_tool_status(const char *tool_name);
 void display_set_wifi_status(const char *ip_addr);
 void display_scroll_conversation(int pixels);
+void display_set_battery(int percent);
 
 #endif // DISPLAY_H

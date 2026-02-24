@@ -34,6 +34,7 @@ idf_component_register(
         "input.c"
         "haptic.c"
         "voice.c"
+        "battery.c"
     INCLUDE_DIRS "."
     REQUIRES
         nvs_flash
@@ -52,6 +53,7 @@ idf_component_register(
         lcd_touch_bsp
         lcd_bl_pwm_bsp
         user_encoder_bsp
+        esp_adc
 )
 
 set(ZCLAW_VERSION_FILE "${CMAKE_SOURCE_DIR}/VERSION")

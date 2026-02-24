@@ -16,6 +16,7 @@
 #include "input.h"
 #include "haptic.h"
 #include "voice.h"
+#include "battery.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -420,7 +421,14 @@ void app_main(void)
         ESP_LOGW(TAG, "Haptic init failed, continuing without haptic");
     }
 
-    // 3d. Initialize voice (I2S PDM mic)
+    // 3d. Initialize battery monitor (ADC on GPIO 1)
+    if (battery_init() != ESP_OK) {
+        ESP_LOGW(TAG, "Battery init failed, continuing without battery monitor");
+    } else {
+        display_set_battery(battery_get_percentage());
+    }
+
+    // 3e. Initialize voice (I2S PDM mic)
     if (voice_init() != ESP_OK) {
         ESP_LOGW(TAG, "Voice init failed, continuing without voice");
     }

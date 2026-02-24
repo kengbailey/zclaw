@@ -66,7 +66,7 @@ CONFIG_ESP_TASK_WDT_TIMEOUT_S=60
 CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y
 
 # GPIO tool safety: allowlist for this board (avoid all reserved peripheral pins)
-CONFIG_ZCLAW_GPIO_ALLOWED_PINS="1,35,36,37,38,43,44,48"
+CONFIG_ZCLAW_GPIO_ALLOWED_PINS="35,36,37,38,43,44,48"
 
 # When USB-C is oriented for the ESP32-S3, it connects directly to the S3's
 # native USB Serial/JTAG interface (usbmodem). Use the default USB Serial/JTAG

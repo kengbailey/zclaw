@@ -319,6 +319,7 @@ static void lvgl_task(void *arg)
 // -------------------------------------------------------------------------
 static lv_obj_t *s_status_label;
 static lv_obj_t *s_wifi_label;
+static lv_obj_t *s_battery_label;
 static lv_obj_t *s_conversation;  // scrollable label for messages
 
 #define CONV_BUF_SIZE  2048
@@ -349,12 +350,19 @@ static void create_ui(void)
     lv_obj_set_style_text_color(s_status_label, lv_color_hex(0x00D4FF), 0);
     lv_obj_align(s_status_label, LV_ALIGN_TOP_MID, 0, 15);
 
+    // Battery percentage
+    s_battery_label = lv_label_create(scr);
+    lv_label_set_text(s_battery_label, "--");
+    lv_obj_set_style_text_font(s_battery_label, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_color(s_battery_label, lv_color_hex(0x888888), 0);
+    lv_obj_align(s_battery_label, LV_ALIGN_TOP_MID, 0, 35);
+
     // WiFi status
     s_wifi_label = lv_label_create(scr);
     lv_label_set_text(s_wifi_label, "WiFi: --");
     lv_obj_set_style_text_font(s_wifi_label, &lv_font_montserrat_12, 0);
     lv_obj_set_style_text_color(s_wifi_label, lv_color_hex(0x888888), 0);
-    lv_obj_align(s_wifi_label, LV_ALIGN_TOP_MID, 0, 35);
+    lv_obj_align(s_wifi_label, LV_ALIGN_TOP_MID, 0, 50);
 
     // Scrollable conversation area
     lv_obj_t *cont = lv_obj_create(scr);
@@ -574,6 +582,24 @@ void display_scroll_conversation(int pixels)
     lv_obj_t *cont = lv_obj_get_parent(s_conversation);
     lv_coord_t cur_y = lv_obj_get_scroll_y(cont);
     lv_obj_scroll_to_y(cont, cur_y + pixels, LV_ANIM_ON);
+
+    lvgl_unlock();
+}
+
+void display_set_battery(int percent)
+{
+    if (!s_lvgl_mux) return;
+    if (!lvgl_lock(100)) return;
+
+    char buf[8];
+    snprintf(buf, sizeof(buf), "%d%%", percent);
+    lv_label_set_text(s_battery_label, buf);
+
+    uint32_t color;
+    if (percent >= 50)      color = 0x00E676;  // green
+    else if (percent >= 20) color = 0xFFCC00;  // yellow
+    else                    color = 0xFF5252;  // red
+    lv_obj_set_style_text_color(s_battery_label, lv_color_hex(color), 0);
 
     lvgl_unlock();
 }

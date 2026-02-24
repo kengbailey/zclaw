@@ -369,8 +369,6 @@ static void voice_task(void *arg)
         heap_caps_free(wav_data);
 
         if (err == ESP_OK && transcription[0] != '\0') {
-            display_add_user_message(transcription);
-
             channel_msg_t msg = {0};
             strncpy(msg.text, transcription, CHANNEL_RX_BUF_SIZE - 1);
             msg.source = MSG_SOURCE_VOICE;
